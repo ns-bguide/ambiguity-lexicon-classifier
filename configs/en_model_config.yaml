@@ -4,19 +4,19 @@ thresholds:
   n_lexicons_common: 2
   long_token_len: 14
   wiki_entries_ambiguous_min: 2
-  wiki_page_views_review_min: 150
-  wiki_total_edits_review_min: 100
+  wiki_page_views_review_min: 1000
+  wiki_total_edits_review_min: 300
   wiki_entries_unambiguous_max: 1
 
 weights:
   ambiguous:
     freq_common: 1.0
-    nlex_common: 1.0
-    in_wordfreq: 0.5
+    nlex_common: 2.0
+    in_wordfreq: 1.0
     wiki_entries: 1.0
   review:
-    wiki_views: 1.0
-    wiki_edits: 1.0
+    wiki_views: 0.5
+    wiki_edits: 0.5
   unambiguous:
     freq_rare: 1.0
     nlex_zero: 0.5

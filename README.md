@@ -36,7 +36,7 @@ Data download:
    .venv/bin/python scripts/build_lexicon.py --lang-code en --output data/processed/lexicon_en.parquet
    ```
    Useful flags:
-   - `--wordfreq-top-n`: limit the number of wordfreq tokens (default `100000`).
+   - `--wordfreq-top-n`: limit the number of wordfreq tokens (default `1500000`).
    - `--extra-txt-dir`: override the directory containing `*.txt` custom lists.
    - `--verbose`: emit debug logging during ingestion.
 
@@ -103,7 +103,7 @@ Tuning tips:
        --output data/processed/amb_scores_en_enriched.csv \
        --format csv \
        --output-profile interpretable \
-       --config configs/en_model_config.json
+       --config configs/en_model_config.yaml
     ```
 
 4. **Summarize the built lexicon**
@@ -147,10 +147,10 @@ Tuning tips:
    - `--freq-log-rare`: log-frequency threshold for rare terms (default: -11.5)
    - `--n-lexicons-common`: minimum number of lexicons to count as common (default: 2)
    - `--long-token-len`: token length threshold signaling likely unambiguous technical/proper terms (default: 14)
- - Config (JSON or YAML): use `--config` with either JSON or YAML to set both `thresholds` and `weights`.
+ - Config (YAML): use `--config` with a YAML file to set both `thresholds` and `weights`.
     - Thresholds: `freq_log_common`, `freq_log_rare`, `n_lexicons_common`, `long_token_len`, `wiki_entries_ambiguous_min`, `wiki_page_views_review_min`, `wiki_total_edits_review_min`, `wiki_entries_unambiguous_max`.
     - Weights: per-class signal weights for `ambiguous` (`freq_common`, `nlex_common`, `in_wordfreq`, `wiki_entries`), `review` (`wiki_views`, `wiki_edits`), and `unambiguous` (`freq_rare`, `nlex_zero`, `len_long`, `single_entry`).
-    - Example configs: JSON [configs/en_model_config.json](configs/en_model_config.json), YAML [configs/en_model_config.yaml](configs/en_model_config.yaml).
+    - Example config: YAML [configs/en_model_config.yaml](configs/en_model_config.yaml).
 
  YAML usage example:
  ```bash

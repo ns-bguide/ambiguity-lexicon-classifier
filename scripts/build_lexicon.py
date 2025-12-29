@@ -331,7 +331,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--wordfreq-top-n",
         type=int,
-        default=2_000_000,
+        default=1_500_000,
         help="Number of most frequent tokens to pull from wordfreq",
     )
     parser.add_argument(
