@@ -1,0 +1,53 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+*.log
+
+# Environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build artifacts
+build/
+dist/
+
+# Project data and outputs (keep directories via .gitkeep)
+# Raw and processed data
+data/raw/**
+!data/raw/.gitkeep
+
+data/processed/**
+!data/processed/.gitkeep
+
+# Temporary and input test data
+data/tmp/**
+!data/tmp/.gitkeep
+
+data/input_tests/**
+!data/input_tests/.gitkeep
+
+# Reports and outputs
+reports/**
+!reports/.gitkeep
+
+outputs/**
+!outputs/.gitkeep
+
+# Large common data formats (prevent accidental top-level commits)
+*.parquet
+*.arrow
+*.feather
+*.orc
+*.tsv
+*.xlsx
