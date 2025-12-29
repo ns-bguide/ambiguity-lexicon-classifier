@@ -6,7 +6,6 @@ Multilingual toolkit for building consolidated lexical resources, scoring term a
 - Consolidates Wordfreq, Hunspell, Wiktionary, and optional custom wordlists into language-specific lexicons stored as Parquet.
 - Provides a `LanguageResources` abstraction that exposes normalized lexical features for downstream models.
 - `TermAmbiguityScorer` with an English heuristic model producing three labels: "likely ambiguous", "likely unambiguous", and "need review".
-- (Upcoming) `RegexStressTester` for evaluating regex patterns against dense common-vocabulary corpora.
 - `RegexStressTester` for evaluating regex patterns against consolidated lexicons across languages.
  - Scorer leverages enriched Wiktionary signals (page views, edits, entries count) and treats missing wordfreq as neutral, so strong common signals correctly classify common English words as "likely ambiguous".
 
@@ -16,6 +15,10 @@ Multilingual toolkit for building consolidated lexical resources, scoring term a
    - Hunspell dictionaries (`*.aff`, `*.dic`) in `data/raw/<lang_code>/hunspell/`
    - Optional custom wordlists (`*.txt`, one token per line) in `data/raw/<lang_code>/txtfiles/`
    - Wiktionary JSONL dump (defaults to `data/raw/wiktionary/wiktionary_full.jsonl` or drop-in per-language files)
+
+Data download:
+- Prebuilt raw data for this project can be downloaded from Google Drive: https://drive.google.com/drive/folders/1W0DZIFcstRf9-rNPpMofFlnJJ-oYg46P?usp=drive_link
+- The Drive folder mirrors the expected `data/raw/` structure. You can place its contents under `data/raw/` to use directly with the scripts here.
 
 ## Quickstart
 
@@ -144,10 +147,20 @@ Tuning tips:
    - `--freq-log-rare`: log-frequency threshold for rare terms (default: -11.5)
    - `--n-lexicons-common`: minimum number of lexicons to count as common (default: 2)
    - `--long-token-len`: token length threshold signaling likely unambiguous technical/proper terms (default: 14)
- - JSON config (optional): `--config configs/en_model_config.json` to set both `thresholds` and `weights`.
+ - Config (JSON or YAML): use `--config` with either JSON or YAML to set both `thresholds` and `weights`.
     - Thresholds: `freq_log_common`, `freq_log_rare`, `n_lexicons_common`, `long_token_len`, `wiki_entries_ambiguous_min`, `wiki_page_views_review_min`, `wiki_total_edits_review_min`, `wiki_entries_unambiguous_max`.
     - Weights: per-class signal weights for `ambiguous` (`freq_common`, `nlex_common`, `in_wordfreq`, `wiki_entries`), `review` (`wiki_views`, `wiki_edits`), and `unambiguous` (`freq_rare`, `nlex_zero`, `len_long`, `single_entry`).
-    - Example config: see [configs/en_model_config.json](configs/en_model_config.json).
+    - Example configs: JSON [configs/en_model_config.json](configs/en_model_config.json), YAML [configs/en_model_config.yaml](configs/en_model_config.yaml).
+
+ YAML usage example:
+ ```bash
+ .venv/bin/python scripts/score_terms.py \
+    --lang-code en \
+    --input data/raw/en/sample_terms.txt \
+    --output data/processed/amb_scores_en.csv \
+    --format csv \
+    --config configs/en_model_config.yaml
+ ```
  
  Heuristic notes:
  - Strong common signals include: `n_lexicons >= 2`, membership in `wordfreq`, `wiki_page_views_30d >= 1000`, `wiki_total_edits >= 100`, or `wiki_entries_count >= 2`.

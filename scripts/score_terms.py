@@ -222,8 +222,17 @@ def main() -> int:
             LOGGER.error("Config file does not exist: %s", cfg_path)
             return 2
         try:
-            with cfg_path.open("r", encoding="utf-8") as f:
-                cfg = json.load(f)
+            if cfg_path.suffix.lower() in {".yml", ".yaml"}:
+                try:
+                    import yaml  # type: ignore
+                except Exception as ie:
+                    LOGGER.error("PyYAML is required for YAML configs. Install with: .venv/bin/python -m pip install pyyaml (%s)", ie)
+                    return 2
+                with cfg_path.open("r", encoding="utf-8") as f:
+                    cfg = yaml.safe_load(f)
+            else:
+                with cfg_path.open("r", encoding="utf-8") as f:
+                    cfg = json.load(f)
             if isinstance(cfg, dict):
                 if isinstance(cfg.get("thresholds"), dict):
                     thresholds.update(cfg["thresholds"])  # type: ignore[arg-type]
