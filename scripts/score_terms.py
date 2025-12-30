@@ -54,6 +54,7 @@ def write_output(results: list[dict], output: Path, fmt: str, profile: str) -> N
                 "freq_log",
                 "n_lexicons",
                 "len_token",
+                "alpha_len",
                 "in_wordfreq",
                 "in_hunspell",
                 "in_wiktionary",
@@ -71,6 +72,8 @@ def write_output(results: list[dict], output: Path, fmt: str, profile: str) -> N
                 "sig_freq_rare",
                 "sig_nlex_zero",
                 "sig_len_long",
+                "sig_len_short",
+                "sig_len_alpha",
                 "sig_single_entry",
                 # Per-class weighted scores
                 "score_ambiguous",
@@ -106,7 +109,7 @@ def write_output(results: list[dict], output: Path, fmt: str, profile: str) -> N
                 label = r.get("label")
                 winner_keys: list[str] = []
                 if label == "likely ambiguous":
-                    winner_keys = ["freq_common", "nlex_common", "in_wordfreq", "wiki_entries"]
+                    winner_keys = ["freq_common", "nlex_common", "in_wordfreq", "wiki_entries", "len_short", "len_alpha"]
                 elif label == "need review":
                     winner_keys = ["wiki_views", "wiki_edits"]
                 elif label == "likely unambiguous":
@@ -134,6 +137,7 @@ def write_output(results: list[dict], output: Path, fmt: str, profile: str) -> N
                         "freq_log": dbg.get("freq_log"),
                         "n_lexicons": dbg.get("n_lexicons"),
                         "len_token": dbg.get("len_token"),
+                        "alpha_len": dbg.get("alpha_len"),
                         "in_wordfreq": dbg.get("in_wordfreq"),
                         "in_hunspell": dbg.get("in_hunspell"),
                         "in_wiktionary": dbg.get("in_wiktionary"),
@@ -141,6 +145,7 @@ def write_output(results: list[dict], output: Path, fmt: str, profile: str) -> N
                         "wiki_single_entry_page": dbg.get("wiki_single_entry_page"),
                         "wiki_page_views_30d": dbg.get("wiki_page_views_30d"),
                         "wiki_total_edits": dbg.get("wiki_total_edits"),
+                        # nonalpha_ratio removed
                         # Signals
                         "sig_freq_common": signals.get("freq_common"),
                         "sig_nlex_common": signals.get("nlex_common"),
@@ -148,9 +153,12 @@ def write_output(results: list[dict], output: Path, fmt: str, profile: str) -> N
                         "sig_wiki_entries": signals.get("wiki_entries"),
                         "sig_wiki_views": signals.get("wiki_views"),
                         "sig_wiki_edits": signals.get("wiki_edits"),
+                        # sig_nonalpha_ratio removed
                         "sig_freq_rare": signals.get("freq_rare"),
                         "sig_nlex_zero": signals.get("nlex_zero"),
                         "sig_len_long": signals.get("len_long"),
+                        "sig_len_short": signals.get("len_short"),
+                        "sig_len_alpha": signals.get("len_alpha"),
                         "sig_single_entry": signals.get("single_entry"),
                         # Scores
                         "score_ambiguous": scores.get("ambiguous"),
@@ -199,9 +207,12 @@ def main() -> int:
     parser.add_argument("--freq-log-rare", type=float, help="Override freq_log threshold for rare terms (default: -11.5)")
     parser.add_argument("--n-lexicons-common", type=int, help="Override minimum lexicon count to consider common (default: 2)")
     parser.add_argument("--long-token-len", type=int, help="Override token length threshold for long tokens (default: 14)")
+    parser.add_argument("--short-token-len-max", type=int, help="Override token length threshold for short tokens considered ambiguous (default: 3)")
+    parser.add_argument("--alpha-token-len-max", type=int, help="Override alphabetic-only token length threshold for ambiguity (default: 3)")
     parser.add_argument("--wiki-entries-ambiguous-min", type=int, help="Minimum wiki entries to treat as likely ambiguous (default: 2)")
     parser.add_argument("--wiki-page-views-review-min", type=int, help="Minimum page views to flag need review (default: 1000)")
     parser.add_argument("--wiki-total-edits-review-min", type=int, help="Minimum total edits to flag need review (default: 100)")
+    # nonalpha ratio override removed
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s %(message)s")
@@ -249,12 +260,17 @@ def main() -> int:
         thresholds["n_lexicons_common"] = args.n_lexicons_common
     if args.long_token_len is not None:
         thresholds["long_token_len"] = args.long_token_len
+    if args.short_token_len_max is not None:
+        thresholds["short_token_len_max"] = args.short_token_len_max
+    if args.alpha_token_len_max is not None:
+        thresholds["alpha_token_len_max"] = args.alpha_token_len_max
     if args.wiki_entries_ambiguous_min is not None:
         thresholds["wiki_entries_ambiguous_min"] = args.wiki_entries_ambiguous_min
     if args.wiki_page_views_review_min is not None:
         thresholds["wiki_page_views_review_min"] = args.wiki_page_views_review_min
     if args.wiki_total_edits_review_min is not None:
         thresholds["wiki_total_edits_review_min"] = args.wiki_total_edits_review_min
+    # nonalpha ratio threshold removed
 
     terms = read_terms(input_path)
 

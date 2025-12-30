@@ -47,21 +47,27 @@ class AmbiguityModelEN(BaseAmbiguityModel):
             "freq_log_rare": -11.5,    # very low frequency => likely unambiguous
             "n_lexicons_common": 2,    # present in >=2 sources => common
             "long_token_len": 14,      # very long tokens lean unambiguous/technical
+            "short_token_len_max": 3,  # very short tokens (<=3) lean ambiguous
+            "alpha_token_len_max": 3,  # alphabetic-only length (<=3) lean ambiguous
             # Enriched Wiktionary heuristics (intuitions)
             "wiki_entries_ambiguous_min": 2,      # more entries => likely ambiguous
             "wiki_page_views_review_min": 1000,   # more views => probably needs review
             "wiki_total_edits_review_min": 100,   # more edits => probably needs review
             "wiki_entries_unambiguous_max": 1,    # single entry suggests lower ambiguity
+            # Non-alphabetic ratio removed (no longer used)
         }
         cfg = {**defaults, **(thresholds or {})}
         self.freq_log_common = float(cfg["freq_log_common"]) 
         self.freq_log_rare = float(cfg["freq_log_rare"]) 
         self.n_lexicons_common = int(cfg["n_lexicons_common"]) 
         self.long_token_len = int(cfg["long_token_len"]) 
+        self.short_token_len_max = int(cfg["short_token_len_max"]) 
+        self.alpha_token_len_max = int(cfg["alpha_token_len_max"]) 
         self.wiki_entries_ambiguous_min = int(cfg["wiki_entries_ambiguous_min"]) 
         self.wiki_page_views_review_min = int(cfg["wiki_page_views_review_min"]) 
         self.wiki_total_edits_review_min = int(cfg["wiki_total_edits_review_min"]) 
         self.wiki_entries_unambiguous_max = int(cfg["wiki_entries_unambiguous_max"]) 
+        # nonalpha_ratio threshold removed
 
         # Weights for signals; allow external override via config
         default_weights = {
@@ -70,6 +76,8 @@ class AmbiguityModelEN(BaseAmbiguityModel):
                 "nlex_common": 1.0,
                 "in_wordfreq": 0.5,
                 "wiki_entries": 1.0,
+                "len_short": 1.0,
+                "len_alpha": 1.0,
             },
             "review": {
                 "wiki_views": 1.0,
@@ -118,7 +126,12 @@ class AmbiguityModelEN(BaseAmbiguityModel):
         s_freq_rare = bool(freq_available and freq_log is not None and freq_log <= self.freq_log_rare)
         s_nlex_zero = bool(n_lexicons == 0)
         s_len_long = bool(len_token >= self.long_token_len)
+        s_len_short = bool(len_token <= self.short_token_len_max)
         s_single_entry = bool(wiki_single_entry_page and (wiki_entries_count <= self.wiki_entries_unambiguous_max))
+        # Alphabetic-only length (count letters only)
+        alpha_count_pre = sum(1 for ch in term if ch.isalpha())
+        alpha_len = alpha_count_pre
+        s_len_alpha = bool(alpha_len <= self.alpha_token_len_max)
 
         # Weighted scores for each label intent
         amb_w = self.weights.get("ambiguous", {})
@@ -129,8 +142,12 @@ class AmbiguityModelEN(BaseAmbiguityModel):
             amb_w.get("freq_common", 0.0) * float(s_freq_common) +
             amb_w.get("nlex_common", 0.0) * float(s_nlex_common) +
             amb_w.get("in_wordfreq", 0.0) * float(s_in_wordfreq) +
-            amb_w.get("wiki_entries", 0.0) * float(s_wiki_entries)
+            amb_w.get("wiki_entries", 0.0) * float(s_wiki_entries) +
+            amb_w.get("len_short", 0.0) * float(s_len_short) +
+            amb_w.get("len_alpha", 0.0) * float(s_len_alpha)
         )
+        # Non-alphabetic ratio removed from signals
+
         review_score = (
             rev_w.get("wiki_views", 0.0) * float(s_wiki_views) +
             rev_w.get("wiki_edits", 0.0) * float(s_wiki_edits)
@@ -168,6 +185,7 @@ class AmbiguityModelEN(BaseAmbiguityModel):
                 "freq_log": freq_log,
                 "n_lexicons": n_lexicons,
                 "len_token": len_token,
+                "alpha_len": alpha_len,
                 "in_wordfreq": in_wordfreq,
                 "in_hunspell": in_hunspell,
                 "in_wiktionary": in_wiktionary,
@@ -185,6 +203,8 @@ class AmbiguityModelEN(BaseAmbiguityModel):
                     "freq_rare": s_freq_rare,
                     "nlex_zero": s_nlex_zero,
                     "len_long": s_len_long,
+                    "len_short": s_len_short,
+                    "len_alpha": s_len_alpha,
                     "single_entry": s_single_entry,
                 },
                 "scores": {

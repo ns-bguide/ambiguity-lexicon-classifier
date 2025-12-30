@@ -3,6 +3,8 @@ thresholds:
   freq_log_rare: -11.5
   n_lexicons_common: 2
   long_token_len: 14
+  short_token_len_max: 3
+  alpha_token_len_max: 3
   wiki_entries_ambiguous_min: 2
   wiki_page_views_review_min: 1000
   wiki_total_edits_review_min: 300
@@ -14,6 +16,8 @@ weights:
     nlex_common: 2.0
     in_wordfreq: 1.0
     wiki_entries: 1.0
+    len_short: 1.0
+    len_alpha: 1.0
   review:
     wiki_views: 0.5
     wiki_edits: 0.5

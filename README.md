@@ -113,8 +113,11 @@ The builder counts `entries` that match the target language to compute `wiki_ent
 - nlex_common: present in ≥ `n_lexicons_common` sources contributes to ambiguous.
 - in_wordfreq: token appears in Wordfreq; contributes to ambiguous.
 - wiki_entries: `wiki_entries_count` ≥ `wiki_entries_ambiguous_min`; contributes to ambiguous.
+- len_short: token length ≤ `short_token_len_max` (default 3); contributes to ambiguous.
+ - len_alpha: alphabetic-only length ≤ `alpha_token_len_max` (default 3); contributes to ambiguous.
 - wiki_views: `wiki_page_views_30d` ≥ `wiki_page_views_review_min`; contributes to need review.
 - wiki_edits: `wiki_total_edits` ≥ `wiki_total_edits_review_min`; contributes to need review.
+ - nonalpha_ratio: Removed. Mixed tokens now rely on other signals; short alphabetic cores (`len_alpha`) contribute to ambiguous.
 - freq_rare: very low frequency (below `freq_log_rare`); contributes to unambiguous.
 - nlex_zero: absent from all sources; contributes to unambiguous.
 - len_long: token length ≥ `long_token_len`; contributes to unambiguous.
@@ -179,8 +182,8 @@ Tuning tips:
    - `--n-lexicons-common`: minimum number of lexicons to count as common (default: 2)
    - `--long-token-len`: token length threshold signaling likely unambiguous technical/proper terms (default: 14)
  - Config (YAML): use `--config` with a YAML file to set both `thresholds` and `weights`.
-    - Thresholds: `freq_log_common`, `freq_log_rare`, `n_lexicons_common`, `long_token_len`, `wiki_entries_ambiguous_min`, `wiki_page_views_review_min`, `wiki_total_edits_review_min`, `wiki_entries_unambiguous_max`.
-    - Weights: per-class signal weights for `ambiguous` (`freq_common`, `nlex_common`, `in_wordfreq`, `wiki_entries`), `review` (`wiki_views`, `wiki_edits`), and `unambiguous` (`freq_rare`, `nlex_zero`, `len_long`, `single_entry`).
+   - Thresholds: `freq_log_common`, `freq_log_rare`, `n_lexicons_common`, `long_token_len`, `short_token_len_max`, `alpha_token_len_max`, `wiki_entries_ambiguous_min`, `wiki_page_views_review_min`, `wiki_total_edits_review_min`, `wiki_entries_unambiguous_max`.
+    - Weights: per-class signal weights for `ambiguous` (`freq_common`, `nlex_common`, `in_wordfreq`, `wiki_entries`, `len_short`, `len_alpha`), `review` (`wiki_views`, `wiki_edits`), and `unambiguous` (`freq_rare`, `nlex_zero`, `len_long`, `single_entry`).
     - Example config: YAML [configs/en_model_config.yaml](configs/en_model_config.yaml).
 
  YAML usage example:
@@ -205,7 +208,10 @@ Example with overrides:
    --output data/processed/amb_scores_en.csv \
    --format csv \
    --freq-log-common -6.5 \
-   --n-lexicons-common 3
+   --n-lexicons-common 3 \
+   --short-token-len-max 2 \
+   --alpha-token-len-max 3 \
+   # nonalpha ratio override removed
 ```
 
 ## Development Workflow
