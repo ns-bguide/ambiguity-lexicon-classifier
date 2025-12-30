@@ -21,6 +21,36 @@ Data download:
 - Prebuilt raw data for this project can be downloaded from Google Drive: https://drive.google.com/drive/folders/1W0DZIFcstRf9-rNPpMofFlnJJ-oYg46P?usp=drive_link
 - The Drive folder mirrors the expected `data/raw/` structure. You can place its contents under `data/raw/` to use directly with the scripts here.
 
+### Wiktionary Enrichment
+
+Wiktionary data used here is enriched via the Wikimedia API to include page-level metrics and per-language entry details. The builder consumes these signals and exposes them as `wiki_page_views_30d`, `wiki_total_edits`, `wiki_entries_count`, and a derived `wiki_single_entry_page` flag (from hidden categories like "Category:Pages with 1 entry"). A typical JSONL row looks like:
+
+```json
+{
+   "word": "free",
+   "languages": ["English", "Galician", "Low German", "English"],
+   "tags": ["Adjective", "Adverb", "Noun", "Verb", "Verb", "Adjective", "Proper noun"],
+   "entries": [
+      {"language": "English", "tags": ["Adjective", "Adverb", "Noun", "Verb"]},
+      {"language": "Galician", "tags": ["Verb"]},
+      {"language": "Low German", "tags": ["Adjective"]},
+      {"language": "English", "tags": ["Proper noun"]}
+   ],
+   "_pageid": 19,
+   "_title": "free",
+   "page_views_30d": 14637,
+   "total_edits": 1472,
+   "recent_authors_30d": 3,
+   "hidden_categories": [
+      "Category:Pages with 3 entries",
+      "Category:Pages with entries"
+      // ... many more per-page maintenance categories
+   ]
+}
+```
+
+The builder counts `entries` that match the target language to compute `wiki_entries_count` and maps page-level metrics to the consolidated lexicon for downstream scoring.
+
 ## Quickstart
 
 1. **Create and populate a virtual environment**
