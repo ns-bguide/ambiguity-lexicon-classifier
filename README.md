@@ -15,6 +15,7 @@ Multilingual toolkit for building consolidated lexical resources, scoring term a
    - Hunspell dictionaries (`*.aff`, `*.dic`) in `data/raw/<lang_code>/hunspell/`
    - Optional custom wordlists (`*.txt`, one token per line) in `data/raw/<lang_code>/txtfiles/`
    - Wiktionary JSONL dump (defaults to `data/raw/wiktionary/wiktionary_full.jsonl` or drop-in per-language files)
+ - Language normalization: `langcodes[data]` is used to robustly map language names to ISO codes. It is installed automatically via project dependencies.
 
 Data download:
 - Prebuilt raw data for this project can be downloaded from Google Drive: https://drive.google.com/drive/folders/1W0DZIFcstRf9-rNPpMofFlnJJ-oYg46P?usp=drive_link
@@ -185,6 +186,10 @@ Example with overrides:
 
 ## Troubleshooting
 - If the lexicon build fails, ensure the Hunspell and Wiktionary files exist and are readable, and that network access is available for the initial `wordfreq` download.
+- If language name → code normalization fails or logs that `langcodes` is missing, install it explicitly:
+   ```bash
+   .venv/bin/python -m pip install "langcodes[data]"
+   ```
 - Hunspell bindings are optional. If you opt in via `.[hunspell]`, install the OS packages (`libhunspell-dev`, dictionary locales) first.
 - When running commands in CI or scripts, always call Python via the virtualenv path (`.venv/bin/python`) instead of activating the environment.
 
